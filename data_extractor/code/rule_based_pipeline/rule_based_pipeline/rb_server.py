@@ -3,6 +3,9 @@ import os
 
 from flask import Flask, Response, request
 
+import spm
+
+
 app = Flask(__name__)
 
 def run_rb_int(raw_pdf_folder, working_folder, output_folder, verbosity):
@@ -21,6 +24,19 @@ def run_rb(project_name, verbosity):
     output_folder = base + r'/output/KPI_EXTRACTION/rb'
     run_rb_int(raw_pdf_folder, working_folder, output_folder, verbosity)
 
+
+def run_rb_spm(project_name, verbosity):
+    print('run_rb_spm', project_name, verbosity)
+    base = r'/app/data/' + project_name 
+    spm.run([
+        'python3', '/app/code/rule_based_pipeline/rule_based_pipeline/main.py',
+        '--raw_pdf_folder', base + r'/interim/pdfs/',
+        '--working_folder', base + r'/interim/rb/work',
+        '--output_folder', base + r'/output/KPI_EXTRACTION/rb',
+        '--verbosity', str(verbosity)
+    ], log_dir=base)
+
+
 @app.route("/liveness")
 def liveness():
     return Response(response={}, status=200)
@@ -30,7 +46,7 @@ def liveness():
 def run():
     project_name = request.args['project_name']
     verbosity  = int(request.args['verbosity'])
-    run_rb(project_name, verbosity)
+    run_rb_spm(project_name, verbosity)
     return Response(response={}, status=200)
 
 
