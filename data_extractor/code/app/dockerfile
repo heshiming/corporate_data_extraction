@@ -1,0 +1,33 @@
+FROM node:lts-slim AS fe_build
+ARG VITE_ENDPOINT_BASE
+COPY fe /app/fe
+RUN cd /app/fe && \
+    npm install && \
+    npm run build
+
+
+FROM python:3.11-slim
+RUN apt-get update && apt-get install -y nginx && rm /etc/nginx/sites-enabled/default
+COPY fe_be_aio.nginx.conf /etc/nginx/sites-enabled/
+COPY src/requirements.txt /root/
+RUN pip install -r /root/requirements.txt
+COPY src/ /de/
+COPY --from=fe_build /app/fe/dist /opt/fe
+# run nginx as unprivileged user, per openshift requirement
+# openshift enforces user id 1001850000: https://cookbook.openshift.org/users-and-role-based-access-control/why-do-my-applications-run-as-a-random-user-id.html
+# `id` returns `uid=1001850000(1001850000) gid=0(root) groups=0(root),1001850000`
+RUN useradd --gid 0 -u 1001850000 1001850000
+RUN mkdir -p /var/log/nginx && \
+    mkdir -p /var/cache/nginx && \
+    mkdir -p /var/lib/nginx && \
+    chown -R 1001850000:0 /opt/fe && \
+    chmod -R 755 /opt/fe && \
+    chown -R 1001850000:0 /var/log/nginx && \
+    chown -R 1001850000:0 /var/cache/nginx && \
+    chown -R 1001850000:0 /var/lib/nginx && \
+    chown -R 1001850000:0 /etc/nginx/ && \
+    touch /run/nginx.pid && \
+    chown -R 1001850000:0 /run/nginx.pid
+WORKDIR /de
+EXPOSE 8000
+CMD ["./entry.sh"]

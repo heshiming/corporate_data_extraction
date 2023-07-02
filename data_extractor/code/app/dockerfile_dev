@@ -1,0 +1,5 @@
+FROM python:3.11-slim
+COPY src/requirements.txt /root/
+RUN pip install -r /root/requirements.txt
+WORKDIR /de
+CMD ["sanic", "de.app", "--host=0.0.0.0", "--port=1300"]
