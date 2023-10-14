@@ -1,2 +1,0 @@
-from .base_kpi_inference_curator import BaseKPIInferenceCurator
-from .text_kpi_inference_curator import TextKPIInferenceCurator
