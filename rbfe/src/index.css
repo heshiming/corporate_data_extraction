@@ -1,0 +1,66 @@
+:root {
+  font-family: Roboto, sans-serif;
+  color: #666;
+}
+
+body {
+  margin: 0;
+}
+
+a {
+  text-decoration: none;
+}
+
+.site-header {
+  padding: 1.5rem 1rem 1rem 1rem;
+  font-size: 1.25rem;
+  line-height: 1.25rem;
+}
+.site-header-spacer {
+  background: linear-gradient(45deg, hsla(321, 42%, 48%, 1) 0%, hsla(343, 80%, 65%, 1) 100%);
+  height: 1px;
+  margin: 0.5rem 2rem;
+}
+
+.site-content {
+  margin: 2rem;
+  position: relative;
+}
+
+.page-title {
+  color: #666;
+  padding: 1rem;
+  border-bottom: 1px solid #ddd;
+}
+.page-content {
+  color: #777;
+  padding: 1rem 1rem 1rem 3rem;
+}
+
+.tag {
+  font-size: 0.9rem;
+  font-weight: bold;
+  margin-right: 1rem;
+}
+.tag > span:last-child {
+  padding: 0.25rem 0.5rem;
+  border-top: 1px solid #aaa;
+  border-bottom: 1px solid #aaa;
+  border-right: 1px solid #aaa;
+  border-top-right-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
+}
+.tag > span:first-child {
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-top-left-radius: 0.5rem;
+  border-bottom-left-radius: 0.5rem;
+}
+.tag-bg-1 {
+  border: 1px solid hsla(321, 42%, 48%, 1);
+  background-color: hsla(321, 42%, 48%, 1);
+}
+.tag-bg-2 {
+  border: 1px solid hsla(343, 80%, 65%, 1);
+  background-color: hsla(343, 80%, 65%, 1);
+}

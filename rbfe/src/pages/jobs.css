@@ -1,0 +1,20 @@
+.jobs {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  border-radius: 0.25rem;
+}
+
+.active_job {
+  color: white;
+  background: linear-gradient(70deg, hsla(321, 42%, 48%, 1) 0%, hsla(343, 80%, 65%, 1) 100%);
+  background-size: 400% 400%;
+  animation: in-progress-animation 5s ease infinite;
+}
+.done_job {
+  color: #009944;
+}
+
+@keyframes in-progress-animation { 
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
