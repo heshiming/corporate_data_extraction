@@ -19,8 +19,8 @@ global_working_folder   = r"work_dir/"
 global_output_folder = r"output/"
 
 global_kpi_spec_path 	= ""  # if set, then command line argument will be ignored; example: "kpispec.txt"
-global_rendering_font_override = r"default_font.otf"
-global_approx_font_name		=r"default_font.otf" # use this font as approximation
+global_rendering_font_override = r"/usr/share/fonts/truetype/ubuntu/Ubuntu-R.ttf"
+global_approx_font_name		=r"/usr/share/fonts/truetype/ubuntu/Ubuntu-R.ttf" # use this font as approximation
 global_max_identify_complex_items_timeout = 0.5 # seconds
 
 global_force_special_items_into_table = True
