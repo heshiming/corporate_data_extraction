@@ -100,7 +100,7 @@ function NewJob() {
           ):'' }
       </div>
 
-      <Button variant="contained" sx={{ marginTop: '1rem', marginBottom: '1rem' }} onClick={ queue_job }>Queue This Job</Button>
+      <Button variant="contained" sx={{ marginTop: '1rem', marginBottom: '1rem' }} onClick={ queue_job } disabled={ files.length == 0}>Queue This Job</Button>
     </div>
 
   </div>)
