@@ -9,7 +9,7 @@ function GoSession() {
 
   useEffect(() => {
     let timer = setTimeout(() => {
-      session.set(session_id);
+      session.set_temp(session_id);
       navigate('/');
     }, 500);
     return () => {

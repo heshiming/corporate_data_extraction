@@ -139,13 +139,16 @@ def check():
 def list_all(session):
     session_path = os.path.join(os.environ['FILE_PATH'], session)
     jobs = []
-    for e in os.scandir(session_path):
-        if not e.is_dir():
-            continue
-        if not e.name.startswith('job_'):
-            continue
-        job = get_one(session, e.name)
-        jobs.append(job)
+    try:
+        for e in os.scandir(session_path):
+            if not e.is_dir():
+                continue
+            if not e.name.startswith('job_'):
+                continue
+            job = get_one(session, e.name)
+            jobs.append(job)
+    except FileNotFoundError:
+        pass
     jobs.sort(key=lambda x: x['id'], reverse=True)
     return jobs
 

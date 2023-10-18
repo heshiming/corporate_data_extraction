@@ -13,7 +13,14 @@ const set_key = function(key) {
   localStorage.setItem('session_key', key);
 }
 
+const set_temp_key = function(key) {
+  sessionStorage.setItem('session_key', key);
+}
+
 const get_key = function() {
+  var key = sessionStorage.getItem('session_key');
+  if (key)
+    return key;
   var key = localStorage.getItem('session_key');
   if (!key)
     key = gen_key();
@@ -23,5 +30,6 @@ const get_key = function() {
 
 export const session = {
   get: get_key,
-  set: set_key
+  set: set_key,
+  set_temp: set_temp_key
 };

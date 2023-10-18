@@ -13,7 +13,7 @@ function SiteHeader() {
   useEffect(() => {
     let timer = setTimeout(() => {
       set_skey(session.get());
-    }, 1000);
+    }, 100);
     return () => {
       clearTimeout(timer);
     }
