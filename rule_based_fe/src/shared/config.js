@@ -1,3 +1,3 @@
 export const config = {
-  endpoint_base:  '//localhost:8000',
+  endpoint_base:  '//localhost:18000',
 };

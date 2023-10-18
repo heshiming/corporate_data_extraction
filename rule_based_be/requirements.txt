@@ -1,0 +1,4 @@
+sanic==23.3.0
+sanic-ext==23.3.0
+orjson==3.8.3
+fasteners==0.19

@@ -26,7 +26,7 @@ def process_folder(folder_name):
     p = subprocess.Popen(args, stdout=stdout_fh, stderr=stderr_fh, encoding='utf-8')
     PROCESSES[folder_name] = {
         'process': p,
-        'created_at': datetime.datetime.now(tz=datetime.timezone.utc).replace(microsecond=0),
+        'created_at': datetime.datetime.now(tz=datetime.timezone.utc).replace(microsecond=0).isoformat(),
     }
     return True
 
@@ -41,15 +41,14 @@ def is_process_complete(folder_name):
     entry = PROCESSES.get(folder_name)
     if entry is None:
         return True
-    entry['process'].poll()
-    if entry['process'].returncode is None:
+    if entry['process'].poll() is None:
         return False
     now = datetime.datetime.now(tz=datetime.timezone.utc).replace(microsecond=0)
     if 'finished_at' in entry:
-        if (now - entry['finished_at']).seconds > 36000:
+        if (now - datetime.datetime.fromisoformat(entry['finished_at'])).seconds > 36000:
             del PROCESSES[folder_name]
     else:
-        entry['finished_at'] = now
+        entry['finished_at'] = now.isoformat()
     return True
 
 
@@ -69,6 +68,19 @@ def get_process_output(folder_name):
     return log
 
 
+def get_process_field(folder_name):
+    global PROCESSES
+    entry = PROCESSES.get(folder_name)
+    if entry is None:
+        return {}
+    ret = {}
+    for k, v in entry.items():
+        if k in ['process']:
+            continue
+        ret[k] = v
+    return ret
+
+
 def get_running_processes():
     global PROCESSES
     running = []
@@ -80,7 +92,7 @@ def get_running_processes():
 
 
 # Create server
-port = 33101
+port = os.environ.get('RPC_PORT', 33101)
 with SimpleXMLRPCServer(('0.0.0.0', port),
                         requestHandler=RequestHandler) as server:
     server.register_introspection_functions()
@@ -88,6 +100,7 @@ with SimpleXMLRPCServer(('0.0.0.0', port),
     server.register_function(is_process_exist, 'is_process_exist')
     server.register_function(is_process_complete, 'is_process_complete')
     server.register_function(get_process_output, 'get_process_output')
+    server.register_function(get_process_field, 'get_process_field')
     server.register_function(get_running_processes, 'get_running_processes')
     # Run the server's main loop
     print('XMLRPCServer started on port {}'.format(port), flush=True)

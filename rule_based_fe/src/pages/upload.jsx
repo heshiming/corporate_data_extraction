@@ -1,6 +1,7 @@
 import toast from 'react-hot-toast';
 import { useDropzone } from 'react-dropzone';
 import { config } from '../shared/config';
+import { session } from '../shared/session';
 
 
 let upload_files = [];
@@ -34,11 +35,8 @@ function do_upload(refresh, path) {
         refresh(path);
       });
     };
-    let apiPath = '/files/new';
-    if (path)
-      apiPath += '/' + path;
+    let apiPath = '/upload/' + session.get();
     xhr.open('POST', config.endpoint_base + apiPath);
-    // xhr.setRequestHeader('Authorization', 'Bearer ' + auth.getToken());
     var form = new FormData();
     form.append('file', file);
     xhr.send(form);
@@ -68,7 +66,7 @@ function queue_upload_files(files) {
 }
 
 
-function init_dropzone(path, refresh) {
+function init_dropzone(path, refresh, max_files) {
   return useDropzone({
     /*
     return value is { getRootProps, getInputProps, isDragActive, isDragAccept, isDragReject, open }
@@ -76,11 +74,11 @@ function init_dropzone(path, refresh) {
     accept: {
       'application/pdf': ['.pdf']
     },
-    maxFiles: 5,
+    maxFiles: max_files,
     noClick: true,
     onDrop: acceptedFiles => {
       if (acceptedFiles.length === 0) {
-        toast.error(<span>Only files with <span className="font-bold">.pdf</span> extension are accepted.</span>, {
+        toast.error(<span>Only files with <span className="font-bold">.pdf</span> extension are accepted, { max_files } maximum.</span>, {
           duration: 5000,
           position: 'bottom-right'
         })

@@ -1,0 +1,27 @@
+version: '2'
+services:
+  rule_based_pipeline:
+    container_name: rule_based_pipeline
+    build:
+      context: ./rule_based_pipeline/
+      dockerfile: dockerfile_dev
+    volumes:
+      - ./data:/app/data
+      - ./rule_based_pipeline/:/app
+    ports:
+      - 33101:33101
+    command: python3 rpcserver.py
+  be:
+    container_name: rule_based_be
+    build:
+      context: ./rule_based_be/
+      dockerfile: dockerfile_dev
+    command: sanic de.app --dev --host=0.0.0.0 --port=1300
+    environment:
+      - FILE_PATH=/app/data
+      - RBP_URL=host.docker.internal:33101
+    volumes:
+      - ./data:/app/data
+      - ./rule_based_be/src:/de
+    ports:
+      - 18000:1300
