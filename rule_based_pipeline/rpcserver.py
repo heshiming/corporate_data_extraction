@@ -54,9 +54,6 @@ def is_process_complete(folder_name):
 
 def get_process_output(folder_name):
     global PROCESSES
-    entry = PROCESSES.get(folder_name)
-    if entry is None:
-        return ''
     base_path = os.path.join('/app/data', folder_name)
     log_stdout = os.path.join(base_path, 'stdout.txt')
     log_stderr = os.path.join(base_path, 'stderr.txt')

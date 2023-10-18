@@ -110,61 +110,53 @@ async def list_jobs(request, session):
     session = sanitize_filename(session)
     return response.json({'status': 'ok', 'data': job_queue.list_all(session)})
 
-# @app.get('/extract/<session>')
-# async def extract(request, session):
-#     if not session:
-#         raise exceptions.BadRequest()
-#     req = urllib.request.Request('http://{}/run?{}'.format(os.environ.get('RBP_URL'), urllib.parse.urlencode({'project_name': session, 'verbosity': 2})), method='GET')
-#     with urllib.request.urlopen(req) as resp:
-#         pass
-#     return response.json({
-#         'status': 'ok'
-#     })
 
-
-# @app.get('/extract_status/<session>/<bytes_read>')
-# async def extract_status(request, session, bytes_read):
-#     if not session:
-#         raise exceptions.BadRequest()
-#     if not bytes_read:
-#         raise exceptions.BadRequest()
-#     bytes_read = int(bytes_read)
-#     log_path = os.path.join(os.environ['FILE_PATH'], session, 'log.txt')
-#     try:
-#         with open(log_path, 'rb') as f:
-#             f.seek(bytes_read, 0)
-#             ret_bytes = f.read()
-#             pos = f.tell()
-#             return response.json({
-#                 'status': 'ok',
-#                 'data': {
-#                     'pos': pos,
-#                     'content': ret_bytes.decode('utf-8')
-#                 }
-#             })
-#     except UnicodeDecodeError:
-#         # not enough bytes to decode utf-8
-#         return response.json({
-#             'status': 'ok',
-#             'data': {
-#                 'pos': bytes_read,
-#                 'content': ''
-#             }
-#         })
-#     except Exception as e:
-#         return response.json({
-#             'status': 'fail',
-#             'reason': str(e)
-#         })
-
-
-@app.get('/download/<session>')
-async def download(request, session):
+@app.get('/job/<session>/<job_name>')
+async def get_job(request, session, job_name):
     if not session:
         raise exceptions.BadRequest()
-    output_path = os.path.join(os.environ['FILE_PATH'], session, 'output')
-    shutil.make_archive(os.path.join(os.environ['FILE_PATH'], session, session), 'zip', output_path)
-    return await response.file(os.path.join(os.environ['FILE_PATH'], session, '{}.zip'.format(session)))
+    if not job_name:
+        raise exceptions.BadRequest()
+    session = sanitize_filename(session)
+    job_name = sanitize_filename(job_name)
+    job = job_queue.get_one(session, job_name)
+    return response.json({'status': 'ok', 'data': job})
+
+
+@app.get('/job_logs/<session>/<job_name>')
+async def get_job_logs(request, session, job_name):
+    if not session:
+        raise exceptions.BadRequest()
+    if not job_name:
+        raise exceptions.BadRequest()
+    session = sanitize_filename(session)
+    job_name = sanitize_filename(job_name)
+    job = job_queue.get_logs(session, job_name)
+    return response.json({'status': 'ok', 'data': job})
+
+
+@app.post('/cancel_job/<session>/<job_name>')
+async def cancel_job(request, session, job_name):
+    if not session:
+        raise exceptions.BadRequest()
+    if not job_name:
+        raise exceptions.BadRequest()
+    session = sanitize_filename(session)
+    job_name = sanitize_filename(job_name)
+    job_queue.cancel(session, job_name)
+    return response.json({'status': 'ok'})
+
+
+@app.get('/download_job/<session>/<job_name>')
+async def download_job(request, session, job_name):
+    if not session:
+        raise exceptions.BadRequest()
+    if not job_name:
+        raise exceptions.BadRequest()
+    session = sanitize_filename(session)
+    job_name = sanitize_filename(job_name)
+    filename = job_queue.make_result_archive(session, job_name)
+    return await response.file(filename)
 
 
 @app.get('/ping')

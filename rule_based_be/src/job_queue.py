@@ -64,6 +64,12 @@ def add(session):
     return job_name
 
 
+def delete(session, job_name):
+    job_path = os.path.join(os.environ['FILE_PATH'], session, job_name)
+    shutil.rmtree(job_path, ignore_errors=True)
+    logger.info('job {} {} deleted'.format(session, job_name))
+
+
 def cancel(session, job_name):
     with LOCK:
         queue = _load_queue()
@@ -73,9 +79,8 @@ def cancel(session, job_name):
         except ValueError:
             pass
         _save_queue(queue)
-        job_path = os.path.join(os.environ['FILE_PATH'], session, job_name)
-        shutil.rmtree(job_path, ignore_errors=True)
-        logger.info('job {} {} canceled'.format(session, job_name))
+    delete(session, job_name)
+    logger.info('job {} {} canceled'.format(session, job_name))
 
 
 def check():
@@ -139,34 +144,68 @@ def list_all(session):
             continue
         if not e.name.startswith('job_'):
             continue
-        elems = e.name[4:].split('-')
-        created_at = datetime.datetime(int(elems[0]), int(elems[1]), int(elems[2]), int(elems[3]), int(elems[4]), int(elems[5]), tzinfo=datetime.timezone.utc)
-        job = {
-            'id': e.name,
-            'files': [],
-            'created_at': created_at.isoformat(),
-            'updated_at': created_at.isoformat(),
-            'status': 'finished'
-        }
-        input_path = os.path.join(e.path, 'input')
-        for ie in os.scandir(input_path):
-            if not ie.is_file():
-                continue
-            if ie.name.startswith('.'):
-                continue
-            job['files'].append(ie.name)
+        job = get_one(session, e.name)
         jobs.append(job)
-        job_line = '{}|{}'.format(session, e.name)
-        with LOCK:
-            queue = _load_queue()
-            active = _load_active()
-        if job_line in queue:
-            job['status'] = 'queued'
-        elif job_line in active:
-            job['status'] = 'in progress'
-            with xmlrpc.client.ServerProxy("http://{}/RBS".format(os.environ['RBP_URL'])) as proxy:
-                fields = proxy.get_process_field('{}/{}'.format(session, e.name))
-                if 'created_at' in fields:
-                    job['launched'] = fields['created_at']
-    jobs = list(reversed(jobs))
+    jobs.sort(key=lambda x: x['id'], reverse=True)
     return jobs
+
+
+def get_one(session, job_name):
+    job_path = os.path.join(os.environ['FILE_PATH'], session, job_name)
+    elems = job_name[4:].split('-')
+    created_at = datetime.datetime(int(elems[0]), int(elems[1]), int(elems[2]), int(elems[3]), int(elems[4]), int(elems[5]), tzinfo=datetime.timezone.utc)
+    job = {
+        'id': job_name,
+        'files': [],
+        'created_at': created_at.isoformat(),
+        'updated_at': created_at.isoformat(),
+        'status': 'finished'
+    }
+    input_path = os.path.join(job_path, 'input')
+    output_path = os.path.join(job_path, 'output')
+    for ie in os.scandir(input_path):
+        if not ie.is_file():
+            continue
+        if ie.name.startswith('.'):
+            continue
+        job['files'].append(ie.name)
+    try:
+        for ie in os.scandir(output_path):
+            if not ie.name.startswith('.'):
+                job['has_results'] = True
+                break
+    except FileNotFoundError:
+        pass
+    job_line = '{}|{}'.format(session, job_name)
+    with LOCK:
+        queue = _load_queue()
+        active = _load_active()
+    if job_line in queue:
+        job['status'] = 'queued'
+    elif job_line in active:
+        job['status'] = 'in progress'
+        with xmlrpc.client.ServerProxy("http://{}/RBS".format(os.environ['RBP_URL'])) as proxy:
+            fields = proxy.get_process_field('{}/{}'.format(session, job_name))
+            if 'created_at' in fields:
+                job['launched'] = fields['created_at']
+    return job
+
+
+def get_logs(session, job_name):
+    job_path = os.path.join(os.environ['FILE_PATH'], session, job_name)
+    log_stdout = os.path.join(job_path, 'stdout.txt')
+    log_stderr = os.path.join(job_path, 'stderr.txt')
+    log = ''
+    with open(log_stdout) as f:
+        log += f.read()
+    with open(log_stderr) as f:
+        log += f.read()
+    return log
+
+
+def make_result_archive(session, job_name):
+    job_path = os.path.join(os.environ['FILE_PATH'], session, job_name)
+    output_path = os.path.join(job_path, 'output')
+    shutil.make_archive(os.path.join(os.environ['FILE_PATH'], session, job_name), 'zip', output_path)
+    return os.path.join(os.environ['FILE_PATH'], session, '{}.zip'.format(job_name))
+
