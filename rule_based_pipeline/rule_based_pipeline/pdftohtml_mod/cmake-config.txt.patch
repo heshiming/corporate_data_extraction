@@ -1,0 +1,11 @@
+--- cmake-config.txt	2019-09-25 21:54:32
++++ cmake-config-new.txt	2023-10-17 15:07:02
+@@ -194,7 +194,7 @@
+   find_package(Qt5Network)
+   find_package(Qt5PrintSupport)
+ else ()
+-  find_package(Qt4 COMPONENTS QtCore QtGui QtNetwork REQUIRED)
++  find_package(Qt4 COMPONENTS QtCore QtGui QtNetwork)
+ endif ()
+ if(Qt5Widgets_FOUND)
+   message(STATUS "Qt5 found")
